@@ -60,7 +60,7 @@ def init_tbl():
 def trans_entry(addr, tag):
     global ttb_tbl, slttb_ptr, slttb_offset, slttb_idx, slttb_idx_offset
     index = (addr >> 20) & 0xfff
-    val = slttb_ptr + 1
+    val = (slttb_ptr & 0xfffffc00) | 1
     ttb_tbl.append([index, val, tag, addr])
     slttb_ptr += slttb_inc
     slttb_idx += slttb_idx_inc
@@ -70,7 +70,7 @@ def pg4k_entry(addr, num, attr, tag ):
     n_addr = addr
     for i in range(0, num):
         idx = (n_addr >> 12) & 0xff
-        val = (idx << 24) | attr
+        val = (n_addr & 0xfffff000) | attr
         slttb_tbl.append([idx, val, tag, n_addr])
         n_addr += 4096
 
@@ -101,12 +101,14 @@ def define_32_tbl():
     slttb_ptr = SLTTB
     # First 1 MB
     trans_entry(0x00000000, "1st MB @ 2nd level table")
-    pg4k_entry(0x00000000, 80, pg4k_wbwas, "SRAM_P0_L")
+    pg4k_entry(0x00000000, 128, pg4k_wbwas, "SRAM_P0_L")
     pg4k_entry(0x00080000, 1, pg4k_sos, "Trickbox")
     pg4k_entry(0x00090000, 1, pg4k_wbwas, "WFDROM")
     pg4k_entry(0x000A0000, 1, pg4k_wbwas, "BURINROM")
     pg4k_entry(0x000B0000, 1, pg4k_wbwas, "")
-    pg4k_entry(0x000C0000, 3, pg4k_wbwas, "(old) EXT AHB")
+    pg4k_entry(0x000C0000, 1, pg4k_wbwas, "(old) EXT AHB")
+    pg4k_entry(0x000D0000, 1, pg4k_wbwas, "(old) EXT AHB")
+    pg4k_entry(0x000E0000, 1, pg4k_wbwas, "(old) EXT AHB")
     pg4k_entry(0x000F0000, 1, pg4k_sos, "GPIO1 & GPIO2")
     pg4k_entry(0x000F1000, 1, pg4k_sos, "I2C")
     pg4k_entry(0x000F2000, 1, pg4k_sos, "IEC")
@@ -238,6 +240,10 @@ def print_tbl(tbl):
         else:
             gen_zero(i)
     print_list(zlist, line_idx, line_tag, line_addr)
+    zlist = []
+    line_idx = -1
+    line_tag = ''
+    line_addr = -1
 
 def gen_tbl():
     global ttb_tbl, slttb_tbl
