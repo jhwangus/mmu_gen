@@ -241,6 +241,7 @@ def print_tbl(tbl):
 
 def gen_tbl():
     global ttb_tbl, slttb_tbl
+    print(";# These tables are generated with mmu_gen.py.  JH 2020.06")
     print(";# Level 1 table")
     print("TTB")
     print_tbl(ttb_tbl)
